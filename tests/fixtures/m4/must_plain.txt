@@ -1,0 +1,2 @@
+M4 plain text sample.
+Second line.

@@ -1,0 +1,20 @@
+[plugin]
+id = "docling_adapter"
+name = "Docling"
+version = "0.1.0"
+authors = ["DocConvert Team"]
+description = "Docling 适配器 — PDF 与 Office 结构化解析，支持 OCR"
+host_api_version = "1"
+
+[plugin.capabilities]
+input = ["pdf", "docx", "xlsx", "pptx", "html"]
+output = ["markdown", "json"]
+priority = 30
+quality_tier = "high"
+
+[plugin.runtime]
+type = "python"
+entry = "plugin_main:run"
+
+[plugin.dependencies]
+python_packages = ["docling>=2.0.0,<3.0"]

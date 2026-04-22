@@ -1,0 +1,48 @@
+{
+  "name": "doc-convert",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:core": "node scripts/run_without_cargo_target_dir.mjs cross-env DOCCONVERT_BIND_PORT=17300 cargo run --manifest-path src-tauri/Cargo.toml --bin doc-convert-core -- --core-only",
+    "dev:stack": "bash scripts/dev_stack.sh",
+    "fetch-pandoc": "python3 scripts/fetch_pandoc.py",
+    "bundle-python": "node scripts/bundle_python.mjs",
+    "package:plugins": "node scripts/package_bundled_plugins.mjs",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "tauri:dev": "node scripts/run_without_cargo_target_dir.mjs cross-env DOCCONVERT_BIND_PORT=17300 tauri dev",
+    "tauri:build": "node scripts/run_without_cargo_target_dir.mjs npx tauri build",
+    "tauri:build:no-dmg": "node scripts/run_without_cargo_target_dir.mjs npx tauri build --no-bundle",
+    "tauri:build:app": "node scripts/run_without_cargo_target_dir.mjs npx tauri build --bundles app",
+    "tauri:build:smoke": "node scripts/run_without_cargo_target_dir.mjs npx tauri build --no-bundle --ci",
+    "tauri:icon": "tauri icon src-tauri/icons/app-icon.svg -o src-tauri/icons",
+    "tauri:build:dmg": "node scripts/run_without_cargo_target_dir.mjs npx tauri build --bundles dmg --ci",
+    "tauri:build:nsis": "node scripts/run_without_cargo_target_dir.mjs npx tauri build --bundles nsis --ci",
+    "smoke:core": "bash scripts/smoke_core.sh",
+    "regression:m4": "bash scripts/regression_m4.sh",
+    "regression:m4:pandoc": "M4_SUITE=pandoc bash scripts/regression_m4.sh",
+    "regression:m4:local": "bash scripts/run_m4_local.sh"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-dialog": "^2",
+    "@tauri-apps/plugin-fs": "^2",
+    "@tauri-apps/plugin-http": "^2.5.8",
+    "@tauri-apps/plugin-opener": "^2",
+    "lucide-react": "^0.468.0",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@vitejs/plugin-react": "^4",
+    "cross-env": "^7.0.3",
+    "typescript": "^5",
+    "vite": "^5"
+  }
+}

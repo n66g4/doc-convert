@@ -1,0 +1,20 @@
+[plugin]
+id = "markitdown_adapter"
+name = "MarkItDown"
+version = "0.1.0"
+authors = ["DocConvert Team"]
+description = "Microsoft MarkItDown 适配器 — 将 Office/PDF/图像等转换为 Markdown"
+host_api_version = "1"
+
+[plugin.capabilities]
+input = ["pdf", "docx", "xlsx", "pptx", "html", "rtf", "plain", "png", "jpg", "jpeg", "tiff", "wav", "mp3"]
+output = ["markdown"]
+priority = 20
+quality_tier = "medium"
+
+[plugin.runtime]
+type = "python"
+entry = "plugin_main:run"
+
+[plugin.dependencies]
+python_packages = ["markitdown>=0.1.0,<1.0"]

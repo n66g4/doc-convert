@@ -1,0 +1,3 @@
+# 与 pyproject.toml optional-dependencies[all] 对齐；CI / 离线安装可用: pip install -r requirements.txt
+markitdown>=0.1.0,<1.0
+docling>=2.0.0,<3.0

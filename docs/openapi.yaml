@@ -1,0 +1,442 @@
+openapi: 3.0.3
+info:
+  title: DocConvert Core API
+  description: |
+    本机 HTTP API（默认 127.0.0.1）。错误响应为 JSON，字段含 `error_code`、`message`、可选 `details`。
+    人类可读说明见同目录 API.md。
+  version: "1.0.0"
+
+servers:
+  - url: http://127.0.0.1:17300
+    description: 开发默认端口（以实际 Core 为准）
+
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: 健康检查与诊断路径
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /api/v1/convert:
+    post:
+      operationId: postConvert
+      summary: 提交转换任务
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+                - output_format
+              properties:
+                file:
+                  type: string
+                  format: binary
+                output_format:
+                  type: string
+                  example: markdown
+                input_format:
+                  type: string
+                preferred_plugins:
+                  type: string
+                options:
+                  type: string
+                  description: JSON 字符串
+      responses:
+        "202":
+          description: 已接受，异步处理
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConvertResponse"
+        "413":
+          description: 文件过大
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: 无路由或参数无效
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/tasks:
+    get:
+      operationId: listTasks
+      summary: 任务列表
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskListResponse"
+
+  /api/v1/tasks/{task_id}:
+    get:
+      operationId: getTask
+      summary: 任务详情
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConvertTask"
+        "404":
+          description: 未找到
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/tasks/{task_id}/cancel:
+    post:
+      operationId: cancelTask
+      summary: 取消任务
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Task cancelled
+        "404":
+          description: 未找到
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/tasks/{task_id}/download:
+    get:
+      operationId: downloadTaskResult
+      summary: 下载结果文件
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 二进制流
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: 未找到或未完成
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/plugins:
+    get:
+      operationId: listPlugins
+      summary: 插件列表
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PluginListResponse"
+
+  /api/v1/plugins/{plugin_id}/enable:
+    put:
+      operationId: setPluginEnabled
+      summary: 启用或禁用插件
+      parameters:
+        - name: plugin_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetEnabledBody"
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: 插件不存在
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/tools/status:
+    get:
+      operationId: getToolsStatus
+      summary: 运行时与插件快照
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ToolsStatusResponse"
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - error_code
+        - message
+      properties:
+        error_code:
+          type: string
+          example: NO_ROUTE
+        message:
+          type: string
+        details:
+          nullable: true
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        schema:
+          type: integer
+        service:
+          type: string
+        host_api_version:
+          type: string
+        pid:
+          type: integer
+        started_at_unix_ms:
+          type: integer
+          format: int64
+        uptime_ms:
+          type: integer
+          format: int64
+        python_executable:
+          type: string
+        pandoc_executable:
+          type: string
+        data_root:
+          type: string
+        logs_directory:
+          type: string
+        bind_port:
+          type: integer
+
+    ConvertResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: accepted
+        task_id:
+          type: string
+        message:
+          type: string
+        result_url:
+          type: string
+          nullable: true
+
+    PluginInvocation:
+      type: object
+      properties:
+        plugin_id:
+          type: string
+        version:
+          type: string
+
+    TaskError:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          nullable: true
+
+    ConvertTask:
+      type: object
+      properties:
+        task_id:
+          type: string
+        status:
+          type: string
+          enum:
+            - pending
+            - processing
+            - completed
+            - failed
+            - cancelled
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        input_format:
+          type: string
+          nullable: true
+        output_format:
+          type: string
+        plugin_chain:
+          type: array
+          items:
+            $ref: "#/components/schemas/PluginInvocation"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        result_url:
+          type: string
+          nullable: true
+        error:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/TaskError"
+        input_filename_hint:
+          type: string
+          nullable: true
+
+    TaskListResponse:
+      type: object
+      properties:
+        tasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConvertTask"
+
+    SupportedFormats:
+      type: object
+      properties:
+        input:
+          type: array
+          items:
+            type: string
+        output:
+          type: array
+          items:
+            type: string
+
+    PluginView:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        author:
+          type: string
+        description:
+          type: string
+        enabled:
+          type: boolean
+        supported_formats:
+          $ref: "#/components/schemas/SupportedFormats"
+        status:
+          type: string
+
+    PluginListResponse:
+      type: object
+      properties:
+        plugins:
+          type: array
+          items:
+            $ref: "#/components/schemas/PluginView"
+
+    SetEnabledBody:
+      type: object
+      required:
+        - enabled
+      properties:
+        enabled:
+          type: boolean
+
+    ToolsStatusCoreSection:
+      type: object
+      properties:
+        bind_port:
+          type: integer
+        max_concurrent_tasks:
+          type: integer
+        task_result_ttl_secs:
+          type: integer
+          format: int64
+        max_file_size_bytes:
+          type: integer
+          format: int64
+        data_root:
+          type: string
+        plugins_extra_dir:
+          type: string
+        runtime_dir:
+          type: string
+
+    PluginToolStatus:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        enabled:
+          type: boolean
+        status:
+          type: string
+        last_checked:
+          type: string
+
+    ToolsStatusResponse:
+      type: object
+      properties:
+        platform:
+          type: string
+        arch:
+          type: string
+        host_api_version:
+          type: string
+        auto_update_enabled:
+          type: boolean
+        core:
+          $ref: "#/components/schemas/ToolsStatusCoreSection"
+        plugins:
+          type: array
+          items:
+            $ref: "#/components/schemas/PluginToolStatus"

@@ -1,0 +1,4 @@
+Pandoc 二进制随应用分发，授权许可为 GNU General Public License v2 或更高版本。
+上游项目: https://github.com/jgm/pandoc
+完整许可证文本见: https://www.gnu.org/licenses/gpl-2.0.html
+版本号见同目录 VERSION 文件（由 scripts/fetch_pandoc.py 写入）。

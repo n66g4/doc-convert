@@ -1,0 +1,20 @@
+[plugin]
+id = "pandoc_wrapper"
+name = "Pandoc"
+version = "0.1.0"
+authors = ["DocConvert Team"]
+description = "Pandoc 包装器 — 多格式互转（Markdown、HTML、DOCX、旧版 .doc、LaTeX 等）"
+host_api_version = "1"
+
+[plugin.capabilities]
+input = ["markdown", "html", "plain", "rtf", "rst", "latex", "docx", "doc", "json"]
+output = ["html", "markdown", "plain", "docx", "latex", "rst", "pdf", "json"]
+priority = 10
+quality_tier = "standard"
+
+[plugin.runtime]
+type = "pandoc_wrapper"
+entry = ""
+
+[plugin.dependencies]
+python_packages = []

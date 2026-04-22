@@ -1,0 +1,13 @@
+node_modules
+dist
+dist-plugins
+target
+python/.venv
+.DS_Store
+.cursor
+src-tauri/resources/pandoc/pandoc
+src-tauri/resources/pandoc/pandoc.exe
+src-tauri/resources/pandoc/VERSION
+# 随包 venv（由 bundle-python 生成，体积大）
+src-tauri/resources/python/**
+!src-tauri/resources/python/README.txt

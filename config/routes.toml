@@ -1,0 +1,121 @@
+# config/routes.toml
+# 内置路由配置（只读，用户覆盖见 DATA_ROOT/config/routes.user.toml）
+# 架构 §7.3
+
+# ─────────────────────────────────────────────
+# 多跳 recipe：无法单跳时使用
+# ─────────────────────────────────────────────
+
+# PDF → DOCX：Docling 先转 Markdown，再由 Pandoc 转 DOCX
+[[recipes]]
+id = "pdf_to_docx_via_docling"
+input = "pdf"
+output = "docx"
+recipe_priority = 10
+steps = [
+  { plugin_id = "docling_adapter", out_format = "markdown" },
+  { plugin_id = "pandoc_wrapper",  out_format = "docx" },
+]
+
+# PDF → HTML：Docling 先转 Markdown，再由 Pandoc 转 HTML
+[[recipes]]
+id = "pdf_to_html_via_docling"
+input = "pdf"
+output = "html"
+recipe_priority = 10
+steps = [
+  { plugin_id = "docling_adapter", out_format = "markdown" },
+  { plugin_id = "pandoc_wrapper",  out_format = "html" },
+]
+
+# PDF → LaTeX
+[[recipes]]
+id = "pdf_to_latex_via_docling"
+input = "pdf"
+output = "latex"
+recipe_priority = 10
+steps = [
+  { plugin_id = "docling_adapter", out_format = "markdown" },
+  { plugin_id = "pandoc_wrapper",  out_format = "latex" },
+]
+
+# DOCX → HTML（Pandoc 直达）
+[[recipes]]
+id = "docx_to_html_pandoc"
+input = "docx"
+output = "html"
+recipe_priority = 5
+steps = [
+  { plugin_id = "pandoc_wrapper", out_format = "html" },
+]
+
+# DOCX → Markdown（两个候选，defaults 优先）
+[[recipes]]
+id = "docx_to_markdown_pandoc"
+input = "docx"
+output = "markdown"
+recipe_priority = 5
+steps = [
+  { plugin_id = "pandoc_wrapper", out_format = "markdown" },
+]
+
+# 旧版 Word .doc → Markdown（Core 内先转 docx 再 Pandoc，见 workers.rs）
+[[recipes]]
+id = "doc_to_markdown_pandoc"
+input = "doc"
+output = "markdown"
+recipe_priority = 5
+steps = [
+  { plugin_id = "pandoc_wrapper", out_format = "markdown" },
+]
+
+# ─────────────────────────────────────────────
+# 默认单跳平局消解
+# ─────────────────────────────────────────────
+
+# PDF → Markdown：默认首选 MarkItDown；单跳多候选时 Core 会在失败或空输出后自动尝试 Docling 等备用插件
+[[defaults]]
+input = "pdf"
+output = "markdown"
+prefer_plugin_id = "markitdown_adapter"
+
+# DOCX → Markdown：Pandoc 单跳（免 Python 依赖即可验收 Must）
+[[defaults]]
+input = "docx"
+output = "markdown"
+prefer_plugin_id = "pandoc_wrapper"
+
+# .doc（Word 97–2004）→ Markdown：先系统/LO 转 docx，再 Pandoc（与 docx 相同插件）
+[[defaults]]
+input = "doc"
+output = "markdown"
+prefer_plugin_id = "pandoc_wrapper"
+
+# HTML → Markdown：Pandoc 单跳
+[[defaults]]
+input = "html"
+output = "markdown"
+prefer_plugin_id = "pandoc_wrapper"
+
+# Excel / PPT → Markdown：MarkItDown（轻量）
+[[defaults]]
+input = "xlsx"
+output = "markdown"
+prefer_plugin_id = "markitdown_adapter"
+
+[[defaults]]
+input = "pptx"
+output = "markdown"
+prefer_plugin_id = "markitdown_adapter"
+
+# 纯文本 → Markdown：Pandoc 单跳
+[[defaults]]
+input = "plain"
+output = "markdown"
+prefer_plugin_id = "pandoc_wrapper"
+
+# RTF → Markdown：Pandoc 单跳
+[[defaults]]
+input = "rtf"
+output = "markdown"
+prefer_plugin_id = "pandoc_wrapper"

@@ -1,0 +1,17 @@
+[project]
+name = "doc-convert-plugins"
+version = "0.1.0"
+description = "Python 依赖包（bundled plugins）"
+requires-python = ">=3.11"
+
+[project.optional-dependencies]
+markitdown = ["markitdown"]
+docling = ["docling>=2.0.0,<3.0"]
+all = [
+    "markitdown",
+    "docling>=2.0.0,<3.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

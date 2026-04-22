@@ -1,0 +1,47 @@
+name: macOS Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Create bundled venv
+        run: |
+          python3 -m venv python/.venv
+          python/.venv/bin/python -m pip install --upgrade pip
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build DMG installer
+        run: npm run tauri:build:dmg
+
+      - name: Upload macOS DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DocConvert-macos-dmg
+          path: target/release/bundle/dmg/*.dmg
+          if-no-files-found: error
